@@ -5,6 +5,11 @@ package types
 
 import (
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+	time "time"
+
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	_ "github.com/gogo/protobuf/types"
@@ -12,10 +17,6 @@ import (
 	crypto "github.com/tendermint/tendermint/proto/tendermint/crypto"
 	bits "github.com/tendermint/tendermint/proto/tendermint/libs/bits"
 	version "github.com/tendermint/tendermint/proto/tendermint/version"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-	time "time"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -72,12 +73,15 @@ const (
 	PrecommitType SignedMsgType = 2
 	// Proposals
 	ProposalType SignedMsgType = 32
+	//Dkg_param
+	DkgParamType SignedMsgType = 3 //changes by rumela
 )
 
 var SignedMsgType_name = map[int32]string{
 	0:  "SIGNED_MSG_TYPE_UNKNOWN",
 	1:  "SIGNED_MSG_TYPE_PREVOTE",
 	2:  "SIGNED_MSG_TYPE_PRECOMMIT",
+	3:  "SIGNED_MSG_TYPE_DKGPARAM", //changes by rumela
 	32: "SIGNED_MSG_TYPE_PROPOSAL",
 }
 
@@ -85,6 +89,7 @@ var SignedMsgType_value = map[string]int32{
 	"SIGNED_MSG_TYPE_UNKNOWN":   0,
 	"SIGNED_MSG_TYPE_PREVOTE":   1,
 	"SIGNED_MSG_TYPE_PRECOMMIT": 2,
+	"SIGNED_MSG_TYPE_DKGPARAM":  3, //changes by rumela
 	"SIGNED_MSG_TYPE_PROPOSAL":  32,
 }
 

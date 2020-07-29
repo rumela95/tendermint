@@ -1,12 +1,12 @@
 package consensus
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"reflect"
 	"sync"
 	"time"
-	"encoding/hex"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -300,8 +300,9 @@ func (conR *Reactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 		case *ProposalMessage:
 			//==============rg
 			fmt.Println(msg.Proposal.BlockID.Hash)
-			dkgMsg := hex.EncodeToString(msg.Proposal.BlockID.Hash)
-			msg.Proposal.BlockID.Hash = dkg.InitSharing("1", "4", dkgMsg)
+			dkgMsg := hex.EncodetoString(msg.Proposal.BlockID.Hash)
+			msg.Proposal.BlockID.Hash = dkg.InitSharing(1, 4, dkgMsg, chID, src, msgBytes)
+			//Block hash now has the commitment value. At each node(determined by chID) VerifyEval is invoked
 			//==============rg
 			ps.SetHasProposal(msg.Proposal)
 			conR.conS.peerMsgQueue <- msgInfo{msg, src.ID()}

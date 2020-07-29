@@ -11,6 +11,8 @@ import (
 	"strconv"						
 
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
+	"github.com/tendermint/tendermint/p2p"
+	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 )
 
 type PedPolyCommit struct {
@@ -192,7 +194,7 @@ func (c *PedPolyCommit) VerifyEval(C *Element, x *Int, poly Polynomial, poly_cap
 	return e1.Equals(e2)
 }
 
-func InitSharing(t string, n string, BlockID string) tmbytes.HexBytes {
+func InitSharing(t string, n string, BlockID string, chID byte, src p2p.Peer, msgBytes []byte) tmbytes.HexBytes {
 	node := new(Int)
 	fault := new(Int)
 	node.SetString(n,10)
@@ -229,6 +231,7 @@ func InitSharing(t string, n string, BlockID string) tmbytes.HexBytes {
 	// Test EvalCommit
 	// c.polyEval(polyOfX, poly, x)
 	// c.polyEval(polyOfX, poly_cap, x)
+	msg, _ := msg, err := decodeMsg(msgBytes)
 	witness := make([]*Element, num)
 	for i := 0; i <= num; i++ {
 		w := c.pairing.NewG1()
@@ -236,8 +239,21 @@ func InitSharing(t string, n string, BlockID string) tmbytes.HexBytes {
 		k.SetString(strconv.Itoa(i),10)
 		c.CreateWitness(w, poly, poly_cap, k)
 		witness[i] = w
+		
+		//send poly, poly_cap, wi, i to each i in n
+		
+		c.polyEval(polyOfX, poly, k)
+		c.polyEval(polycapOfX, poly_cap, k)
+		src.TrySend(chID, MustEncode(&DkgParam struct {
+				Type:      3
+				Height:    msg.Height    
+				Round:     msg.Round     
+				Timestamp: time.Time    
+				PhiX:      polyOfX       
+				PhiCapX:   polycapOfX     
+				Witness:   w  
+			}))
 	}
-	//send poly, poly_cap, wi, i to each i in n
 	//c.CreateWitness(w, poly, x)
 	//assert.True(test, c.VerifyEval(C, x, polyOfX, w), "VerifyEval")
 	return C.Bytes()
