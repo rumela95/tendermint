@@ -6,15 +6,16 @@ import (
 	"reflect"
 	"sync"
 	"time"
+	"encoding/hex"
 
 	"github.com/gogo/protobuf/proto"
 
+	dkg "github.com/tendermint/tendermint/consensus/dkg"
 	cstypes "github.com/tendermint/tendermint/consensus/types"
 	"github.com/tendermint/tendermint/libs/bits"
 	tmevents "github.com/tendermint/tendermint/libs/events"
 	tmjson "github.com/tendermint/tendermint/libs/json"
 	"github.com/tendermint/tendermint/libs/log"
-	tmsync "github.com/tendermint/tendermint/libs/sync"
 	"github.com/tendermint/tendermint/p2p"
 	tmcons "github.com/tendermint/tendermint/proto/tendermint/consensus"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
@@ -43,7 +44,7 @@ type Reactor struct {
 
 	conS *State
 
-	mtx      tmsync.RWMutex
+	mtx      sync.RWMutex
 	waitSync bool
 	eventBus *types.EventBus
 
@@ -297,6 +298,11 @@ func (conR *Reactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 		}
 		switch msg := msg.(type) {
 		case *ProposalMessage:
+			//==============rg
+			fmt.Println(msg.Proposal.BlockID.Hash)
+			dkgMsg := hex.EncodeToString(msg.Proposal.BlockID.Hash)
+			msg.Proposal.BlockID.Hash = dkg.InitSharing("1", "4", dkgMsg)
+			//==============rg
 			ps.SetHasProposal(msg.Proposal)
 			conR.conS.peerMsgQueue <- msgInfo{msg, src.ID()}
 		case *ProposalPOLMessage:

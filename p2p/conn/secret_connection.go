@@ -93,6 +93,7 @@ func MakeSecretConnection(conn io.ReadWriteCloser, locPrivKey crypto.PrivKey) (*
 	var (
 		locPubKey = locPrivKey.PubKey()
 	)
+	fmt.Println("Testlink")
 
 	// Generate ephemeral keys for perfect forward secrecy.
 	locEphPub, locEphPriv := genEphKeys()
