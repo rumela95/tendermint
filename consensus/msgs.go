@@ -127,7 +127,6 @@ func MsgToProto(msg Message) (*tmcons.Message, error) {
 				BlockID: bi,
 			},
 		}
-
 		if bits != nil {
 			vsb.VoteSetBits.Votes = *bits
 		}
@@ -135,6 +134,23 @@ func MsgToProto(msg Message) (*tmcons.Message, error) {
 		pb = tmcons.Message{
 			Sum: vsb,
 		}
+	case *SendMessageDKG:
+		bi := msg.BlockID.ToProto()
+		bits := msg.Votes.ToProto()
+
+		smd := &tmcons.Message_DkgParams{
+			VoteSetBits: &tmcons.&DkgParam{
+				Type:      3
+				Height:    msg.Height    
+				Round:     msg.Round     
+				Timestamp: time.Time    
+				PhiX:      polyOfX       
+				PhiCapX:   polycapOfX     
+				Witness:   w  
+			},
+		}
+
+		
 
 	default:
 		return nil, fmt.Errorf("consensus: message not recognized: %T", msg)

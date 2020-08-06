@@ -5,13 +5,16 @@ package consensus
 
 import (
 	fmt "fmt"
+	io "io"
+	math "math"
+	math_bits "math/bits"
+	time "time"
+
 	_ "github.com/gogo/protobuf/gogoproto"
 	proto "github.com/gogo/protobuf/proto"
 	bits "github.com/tendermint/tendermint/proto/tendermint/libs/bits"
 	types "github.com/tendermint/tendermint/proto/tendermint/types"
-	io "io"
-	math "math"
-	math_bits "math/bits"
+	"gopkg.in/dedis/kyber.v2/group/edwards25519"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -540,6 +543,16 @@ type VoteSetBits struct {
 	BlockID types.BlockID       `protobuf:"bytes,4,opt,name=block_id,json=blockId,proto3" json:"block_id"`
 	Votes   bits.BitArray       `protobuf:"bytes,5,opt,name=votes,proto3" json:"votes"`
 }
+type DkgParam struct {
+	Type      int
+	Height    int64               `json:"height"`
+	Round     int32               `json:"round"` // there can not be greater than 2_147_483_647 rounds
+	Timestamp time.Time           `json:"timestamp"`
+	Signature []byte              `json:"signature"`
+	PhiX      edwards25519.Scalar `json:"phix"`
+	PhiCapX   edwards25519.Scalar `json:"phicapx"`
+	Witness   *edwards25519.Point `json:"witness"`
+}
 
 func (m *VoteSetBits) Reset()         { *m = VoteSetBits{} }
 func (m *VoteSetBits) String() string { return proto.CompactTextString(m) }
@@ -689,6 +702,9 @@ type Message_VoteSetMaj23 struct {
 type Message_VoteSetBits struct {
 	VoteSetBits *VoteSetBits `protobuf:"bytes,9,opt,name=vote_set_bits,json=voteSetBits,proto3,oneof" json:"vote_set_bits,omitempty"`
 }
+type Message_DkgParams struct {
+	DkgParam *DkgParam `protobuf:"bytes,9,opt,name=dkg_param,json=dkgparam,proto3,oneof" json:"dkg_param,omitempty"`
+}
 
 func (*Message_NewRoundStep) isMessage_Sum()  {}
 func (*Message_NewValidBlock) isMessage_Sum() {}
@@ -699,6 +715,7 @@ func (*Message_Vote) isMessage_Sum()          {}
 func (*Message_HasVote) isMessage_Sum()       {}
 func (*Message_VoteSetMaj23) isMessage_Sum()  {}
 func (*Message_VoteSetBits) isMessage_Sum()   {}
+func (*Message_DkgParams) isMessage_Sum()     {}
 
 func (m *Message) GetSum() isMessage_Sum {
 	if m != nil {

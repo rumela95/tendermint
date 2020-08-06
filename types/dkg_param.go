@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 	. "gmp"
-	. "pbc"
 	"strconv"
 	"time"
 
 	tmbytes "github.com/tendermint/tendermint/libs/bytes"
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmtime "github.com/tendermint/tendermint/types/time"
+	"gopkg.in/dedis/kyber.v2/group/edwards25519"
 )
 
 // var (
@@ -23,17 +23,17 @@ import (
 
 type DkgParam struct {
 	Type      tmproto.SignedMsgType
-	Height    int64     `json:"height"`
-	Round     int32     `json:"round"` // there can not be greater than 2_147_483_647 rounds
-	Timestamp time.Time `json:"timestamp"`
-	Signature []byte    `json:"signature"`
-	PhiX      Int       `json:"phix"`
-	PhiCapX   Int       `json:"phicapx"`
-	Witness   *Element  `json:"witness"`
+	Height    int64               `json:"height"`
+	Round     int32               `json:"round"` // there can not be greater than 2_147_483_647 rounds
+	Timestamp time.Time           `json:"timestamp"`
+	Signature []byte              `json:"signature"`
+	PhiX      edwards25519.Scalar `json:"phix"`
+	PhiCapX   edwards25519.Scalar `json:"phicapx"`
+	Witness   *edwards25519.Point `json:"witness"`
 }
 
 // NewDkgParam returns a new set of parameters for a peer.
-func NewDkgParam(height int64, round int32, phix Int, phicapx Int, witness *Element) *Proposal {
+func NewDkgParam(height int64, round int32, phix edwards25519.Scalar, phicapx edwards25519.Scalar, witness *edwards25519.Point) *Proposal {
 	return &Proposal{
 		Type:      tmproto.DkgParamType,
 		Height:    height,

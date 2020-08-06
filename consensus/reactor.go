@@ -29,6 +29,7 @@ const (
 	DataChannel        = byte(0x21)
 	VoteChannel        = byte(0x22)
 	VoteSetBitsChannel = byte(0x23)
+	SendDkgChannel     = byte(0x24)
 
 	maxMsgSize = 1048576 // 1MB; NOTE/TODO: keep in sync with types.PartSet sizes.
 
@@ -301,7 +302,7 @@ func (conR *Reactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 			//==============rg
 			fmt.Println(msg.Proposal.BlockID.Hash)
 			dkgMsg := hex.EncodetoString(msg.Proposal.BlockID.Hash)
-			msg.Proposal.BlockID.Hash = dkg.InitSharing(1, 4, dkgMsg, chID, src, msgBytes)
+			msg.Proposal.BlockID.Hash = dkg.InitSharing(1, dkgMsg, chID, src, msgBytes)
 			//Block hash now has the commitment value. At each node(determined by chID) VerifyEval is invoked
 			//==============rg
 			ps.SetHasProposal(msg.Proposal)
@@ -367,6 +368,18 @@ func (conR *Reactor) Receive(chID byte, src p2p.Peer, msgBytes []byte) {
 		default:
 			// don't punish (leave room for soft upgrades)
 			conR.Logger.Error(fmt.Sprintf("Unknown message type %v", reflect.TypeOf(msg)))
+		}
+
+	case SendDkgChannel:
+		verify := dkg.verify(Dkg_Params)
+		if verify {
+			src.TrySend(VoteSetBitsChannel, MustEncode(&VoteSetBitsMessage{
+				Height:  msg.Height,
+				Round:   msg.Round,
+				Type:    msg.Type,
+				BlockID: msg.BlockID,
+				Votes:   ourVotes,
+			}))
 		}
 
 	default:
